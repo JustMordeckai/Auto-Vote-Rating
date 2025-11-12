@@ -361,7 +361,6 @@ var allProjects = {
             return project
         },
         timeout: () => ({hours: 2}),
-        limitedCountVote: () => true,
         exampleURLGame: () => ['https://top-serveurs.net/', 'minecraft', '/hailcraft'],
         defaultGame: () => 'minecraft',
         gameList: () => new Map([
