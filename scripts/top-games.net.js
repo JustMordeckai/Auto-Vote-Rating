@@ -64,7 +64,8 @@ async function vote(first) {
         try {
             if (document.querySelector('#captcha-content > div > div.grecaptcha-logo > iframe') != null) {
                 //Ждёт загрузки reCaptcha
-                document.querySelector('form.form-vote button[type="submit"]').click()
+                const submitButton = document.querySelector('button#btnSubmitVote') || document.querySelector('form.vote-form button[type="submit"]') || document.querySelector('form.form-vote button[type="submit"]')
+                if (submitButton) submitButton.click()
                 clearInterval(timer)
             }
         } catch (e) {
@@ -77,11 +78,13 @@ async function vote(first) {
         chrome.runtime.sendMessage({captcha: true})
     }
 
-    if (document.querySelector('form.form-vote button[type="submit"]').disabled === true) {
+    const submitButton = document.querySelector('button#btnSubmitVote') || document.querySelector('form.vote-form button[type="submit"]') || document.querySelector('form.form-vote button[type="submit"]')
+    if (submitButton && submitButton.disabled === true) {
         const timer = setInterval(() => {
-            if (document.querySelector('form.form-vote button[type="submit"]')?.disabled === false) {
+            const btn = document.querySelector('button#btnSubmitVote') || document.querySelector('form.vote-form button[type="submit"]') || document.querySelector('form.form-vote button[type="submit"]')
+            if (btn?.disabled === false) {
                 clearInterval(timer)
-                document.querySelector('form.form-vote button[type="submit"]').click()
+                btn.click()
             }
         }, 1000)
     }
