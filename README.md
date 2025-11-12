@@ -2,7 +2,7 @@
 
 > Automated voting extension for game server rating sites
 
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/JustMordeckai/Auto-Vote-Rating/releases)
+[![Version](https://img.shields.io/badge/version-1.1.1-green.svg)](https://github.com/JustMordeckai/Auto-Vote-Rating/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## 📋 Overview
@@ -262,17 +262,6 @@ Track your voting activity:
 - Captcha detection and handling
 - Network error recovery
 - Automatic retry on failure
-
-## 📝 Changelog
-
-### v1.0.0 (2025-11-12)
-
-**Top-Serveurs.net / Top-Games.net:**
-- Fixed "already voted" detection (new HTML structure)
-- Correct 2h cooldown calculation
-- Removed vote counter bug
-
-[View full changelog](https://github.com/JustMordeckai/Auto-Vote-Rating/releases)
 
 ## 🐛 Troubleshooting
 

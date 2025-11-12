@@ -13,8 +13,8 @@ async function vote(first) {
         })
     }
 
-    //Если успешное авто-голосование
-    if (document.querySelector('div.alert.alert-success') != null) {
+    //Détection de la page de succès pour top-serveurs.net (nouvelle structure)
+    if (document.querySelector('.vote-success-header') != null || document.querySelector('.success-title') != null) {
         chrome.runtime.sendMessage({successfully: true})
         return
     }
