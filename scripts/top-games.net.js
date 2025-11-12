@@ -18,6 +18,24 @@ async function vote(first) {
         chrome.runtime.sendMessage({successfully: true})
         return
     }
+
+    // Détection de la page "déjà voté" via la section cooldown (nouvelle structure HTML)
+    if (document.querySelector('.vote-cooldown-section') != null) {
+        const voteTimer = document.getElementById('voteTimer')
+        if (voteTimer != null) {
+            const timerText = voteTimer.textContent.trim()
+            const numbers = timerText.match(/\d+/g)
+            if (numbers && numbers.length > 0) {
+                const milliseconds = numbers[0] * 60 * 1000 // minutes to milliseconds
+                chrome.runtime.sendMessage({later: Date.now() + milliseconds})
+                return
+            }
+        }
+        // Si le timer n'est pas trouvé mais la section cooldown existe
+        chrome.runtime.sendMessage({later: true})
+        return
+    }
+
     //Если есть предупреждение
     if (document.querySelector('div.alert.alert-warning') != null) {
         //Если вы уже голосовали
