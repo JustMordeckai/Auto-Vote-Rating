@@ -48,7 +48,7 @@ nav div.navigation > button img {
 
 nav div.navigation > button.active {
 	opacity: 1;
- 	background: #1a7bee;
+ 	background: #ee1a36;
 }
 
 nav .logo {
@@ -248,7 +248,7 @@ nav .logo img {
 #modals .modal .head {
     justify-content: space-between;
     display: flex;
-    color: #1a7bee;
+    color: #ee1a36;
     font-size: 25px;
     padding-bottom: 10px;
     border-bottom: solid 1px #ccc
@@ -379,7 +379,7 @@ nav .logo img {
 }
 
 .tabcontent > h4 {
-	color: #1a7bee;
+	color: #ee1a36;
 	text-align: center;
 	font-size: 24px;
 	font-weight: 600;
@@ -465,7 +465,7 @@ nav .logo img {
 }
 
 .projectStats img:hover {
-	background: #1a7bee !important;
+	background: #ee1a36 !important;
 }
 
 .projectStats img[src="images/icons/delete.svg"]:hover {
@@ -671,7 +671,7 @@ nav .logo img {
 #generalStats {
 	text-align: center;
 	opacity: .9;
-    background: #1a7bee;
+    background: #ee1a36;
 	cursor: pointer;
 	color: #fff;
     padding: 5px;
@@ -746,7 +746,7 @@ nav .logo img {
 	border-radius: 5px;
 	border: none !important;
 	outline: none !important;
-	background: #1a7bee;
+	background: #ee1a36;
 	color: #fff;
 	font-size: 19px;
 	padding: 10px 20px;
@@ -784,7 +784,7 @@ nav .logo img {
 
 .selectsite.activeList {
 	opacity: 1;
-	background: #1a7bee;
+	background: #ee1a36;
 }
 
 .selectsite,
@@ -818,7 +818,7 @@ nav .logo img {
 	position: absolute;
 	display: inline-block;
 	border-radius: 25px;
-	background: #1a7bee;
+	background: #ee1a36;
 	width: 19px;
 	height: 19px;
 	cursor: help;
@@ -993,7 +993,7 @@ nav .logo img {
 
 .switchAddMode:checked + label:after {
 	right: 0px;
-	background: #1a7bee;
+	background: #ee1a36;
 }
 
 .checkbox {
@@ -1082,7 +1082,7 @@ input.switchAddMode:disabled + label {
 	border: none !important;
 	background: #2a2a2f;
 	border-radius: 5px 5px 0 0;
-	border-bottom: solid 2px #1a7bee !important;
+	border-bottom: solid 2px #ee1a36 !important;
 }
 
 .input {
@@ -1114,7 +1114,7 @@ button:disabled {
 .btn {
     font-size: 15px;
     border-radius: 5px;
-    background: #1a7bee;
+    background: #ee1a36;
     color: #fff;
     padding: 7px 12px;
     outline: none!important;
@@ -1254,7 +1254,7 @@ button:disabled {
 }
 
 #notifBlock > .notif.info {
-    background: #1a7bee;
+    background: #ee1a36;
 }
 
 #notifBlock > .notif.success {
@@ -1323,12 +1323,12 @@ button:disabled {
 
 ::-webkit-scrollbar-thumb {
 	/*border-radius: 0px;*/
-	background: #1a7bee;
+	background: #ee1a36;
 	/*border-radius: 2px;*/
 }
 
 ::-webkit-scrollbar-thumb:hover{
-	background-color:#1a7bee;
+	background-color:#ee1a36;
 }
 
 ::-webkit-resizer{
