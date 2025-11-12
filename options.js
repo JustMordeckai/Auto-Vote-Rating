@@ -2615,7 +2615,7 @@ let timerConfirm
 document.querySelector('button[data-resource="limitedModeButton1"]').addEventListener('click', () => {
     toggleModal('notSupportedBrowser')
     toggleModal('notSupportedBrowser2')
-    let count = 90
+    let count = 10
     document.querySelector('button[data-resource="limitedModeButton2"]').textContent = chrome.i18n.getMessage('limitedModeButton2') + ' (' + chrome.i18n.getMessage('waitSeconds', String(count)) + ')'
     timerConfirm = setInterval(() => {
         if (!count) {
