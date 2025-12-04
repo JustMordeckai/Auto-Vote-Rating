@@ -12,10 +12,8 @@ async function vote(first) {
         if (message.length > 10) {
             if ((message.toLowerCase().includes('Success') && message.toLowerCase().includes('thank you')) || message.toLowerCase().includes('successfully')) {
                 chrome.runtime.sendMessage({ successfully: true })
-            } else {
-                chrome.runtime.sendMessage({ message })
+                return
             }
-            return
         }
     }
     if (document.querySelector('div.bg-green-100')) {
