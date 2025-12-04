@@ -1,14 +1,15 @@
 async function vote(first) {
     const USERNAME_FIELD_SELECTOR = 'input[name="mc_username"]'
+    const ALERT_DIALOG_SELECTOR = 'div[role=alertdialog]'
 
     await new Promise(resolve => setTimeout(resolve, 1000))
 
-    if (document.querySelector('div[role=alertdialog]')?.textContent.toLowerCase().includes('submitting vote in')) {
+    if (document.querySelector(ALERT_DIALOG_SELECTOR)?.textContent.toLowerCase().includes('submitting vote in')) {
         return
     }
 
-    if (document.querySelector('div[role=alertdialog]')) {
-        const message = document.querySelector('div[role=alertdialog]').innerText
+    if (document.querySelector(ALERT_DIALOG_SELECTOR)) {
+        const message = document.querySelector(ALERT_DIALOG_SELECTOR).innerText
         if (message.length > 10) {
             if ((message.toLowerCase().includes('Success') && message.toLowerCase().includes('thank you')) || message.toLowerCase().includes('successfully')) {
                 chrome.runtime.sendMessage({ successfully: true })
