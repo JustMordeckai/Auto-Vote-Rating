@@ -965,7 +965,7 @@ var allProjects = {
         projectName: (doc) => doc.querySelector('div.text-xl').textContent.trim(),
         exampleURL: () => ['https://www.minerank.com/', 'minehut', '/vote'],
         parseURL: (url) => ({ id: url.pathname.split('/')[1] }),
-        timeout: () => ({ hour: 24 }).hour,
+        timeout: () => ({ hour: 24 }),
         alertManualCaptcha: () => true
     },
     'minecraft-list.cz': {
