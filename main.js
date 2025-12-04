@@ -424,6 +424,7 @@ async function upgrade(db, oldVersion, newVersion, transaction) {
             ['ListeServMinecraftFr', 'liste-serv-minecraft.fr'],
             ['PlayMinecraftServersCom', 'play-minecraft-servers.com'],
             ['MinecraftMenu', 'minecraft.menu'],
+            ['MineRank', 'minerank.com'],
             ['Custom', 'Custom']
         ])
         let cursor = await transaction.objectStore('projects').openCursor()
