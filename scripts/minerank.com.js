@@ -11,7 +11,7 @@ async function vote(first) {
     if (document.querySelector(ALERT_DIALOG_SELECTOR)) {
         const message = document.querySelector(ALERT_DIALOG_SELECTOR).innerText
         if (message.length > 10) {
-            if ((message.toLowerCase().includes('Success') && message.toLowerCase().includes('thank you')) || message.toLowerCase().includes('successfully')) {
+            if (message.toLowerCase().includes('Success') || message.toLowerCase().includes('successfully')) {
                 chrome.runtime.sendMessage({ successfully: true })
                 return
             }
