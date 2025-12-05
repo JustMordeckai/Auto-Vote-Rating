@@ -4,19 +4,10 @@ async function vote(first) {
 
     await new Promise(resolve => setTimeout(resolve, 1000))
 
-    if (document.querySelector(ALERT_DIALOG_SELECTOR)?.textContent.toLowerCase().includes('submitting vote in')) {
+    if (document.querySelector(ALERT_DIALOG_SELECTOR)?.textContent.toLowerCase().includes('hang on')) {
         return
     }
 
-    if (document.querySelector(ALERT_DIALOG_SELECTOR)) {
-        const message = document.querySelector(ALERT_DIALOG_SELECTOR).innerText
-        if (message.length > 10) {
-            if (message.toLowerCase().includes('Success') || message.toLowerCase().includes('successfully')) {
-                chrome.runtime.sendMessage({ successfully: true })
-                return
-            }
-        }
-    }
     if (document.querySelector('div.bg-green-100')) {
         chrome.runtime.sendMessage({ successfully: true })
         return
@@ -86,4 +77,17 @@ async function vote(first) {
     }
     console.log('Submit button found:', submitButton)
     submitButton.click()
+
+    await new Promise(resolve => setTimeout(resolve, 15000))
+
+    if (document.querySelector(ALERT_DIALOG_SELECTOR)) {
+        const message = document.querySelector(ALERT_DIALOG_SELECTOR).innerText
+        console.log(`message was: ${message}`)
+        if (message.length > 10) {
+            if (message.toLowerCase().includes('success') || message.toLowerCase().includes('successfully')) {
+                chrome.runtime.sendMessage({ successfully: true })
+                return
+            }
+        }
+    }
 }
