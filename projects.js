@@ -959,6 +959,15 @@ var allProjects = {
         parseURL: (url) => ({id: url.pathname.split('/')[1]}),
         timeout: () => ({hour: 5})
     },
+    'minerank.com': {
+        pageURL: (project) => 'https://www.minerank.com/' + project.id,
+        voteURL: (project) => 'https://www.minerank.com/' + project.id + '/vote',
+        projectName: (doc) => doc.querySelector('div.text-xl').textContent.trim(),
+        exampleURL: () => ['https://www.minerank.com/', 'minehut', '/vote'],
+        parseURL: (url) => ({ id: url.pathname.split('/')[1] }),
+        timeout: () => ({ hour: 24 }),
+        alertManualCaptcha: () => true
+    },
     'minecraft-list.cz': {
         pageURL: (project) => 'https://www.minecraft-list.cz/server/' + project.id,
         voteURL: (project) => 'https://www.minecraft-list.cz/server/' + project.id + '/vote',
