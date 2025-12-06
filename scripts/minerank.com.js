@@ -12,29 +12,32 @@ async function vote(first) {
         chrome.runtime.sendMessage({ successfully: true })
         return
     }
-    if (document.querySelector('div.bg-stone-400\\/20')) {
-        if (document.querySelector('div.bg-stone-400\\/20').textContent.toLowerCase().includes('already voted')) {
-            console.log("Already voted 1")
-            chrome.runtime.sendMessage({ later: true })
+
+    const alreadyVotedSelectors = ['div.bg-stone-400\\/20', 'div.bg-red-200']
+    for (const selector of alreadyVotedSelectors) {
+        const element = document.querySelector(selector)
+        if (element && element.textContent.toLowerCase().includes('already voted')) {
+            // Calculate next midnight UTC
+            const now = new Date()
+            const nextMidnightUTC = new Date(Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate() + 1,
+                0, 0, 0, 0
+            ))
+            chrome.runtime.sendMessage({ later: nextMidnightUTC.getTime() })
             return
         }
     }
 
-    if (document.querySelector('div.bg-red-200')) {
-        if (document.querySelector('div.bg-red-200').textContent.toLowerCase().includes('already voted')) {
-            console.log("Already voted 2")
-            chrome.runtime.sendMessage({ later: true })
-            return
-        }
-    }
-
-    if (document.querySelector('.site-body .text-center')?.textContent.includes('Page Not Found')) {
-        chrome.runtime.sendMessage({ message: document.querySelector('.site-body .text-center')?.textContent.trim(), ignoreReport: true, retryCoolDown: 21600000 })
+    const pageNotFoundSelector = 'body > main > div > p'
+    if (document.querySelector(pageNotFoundSelector)?.textContent.includes('does not exist')) {
+        chrome.runtime.sendMessage({ message: document.querySelector(pageNotFoundSelector)?.textContent.trim(), ignoreReport: true, retryCoolDown: 21600000 })
+        return
     }
 
     if (first) {
         // Instead of attempting to click the Cloudflare Turnstile, ask the user to solve it manually.
-        console.log('Asking user to solve CAPTCHA manually (filled username)')
         chrome.runtime.sendMessage({ captcha: true })
         return
     }
@@ -67,7 +70,6 @@ async function vote(first) {
 
     const usernameField = document.querySelector(USERNAME_FIELD_SELECTOR)
     setValueAndTrigger(usernameField, project.nick)
-    console.log('Username set to:', project.nick)
 
     const submitButton = document.querySelector('form button[type="submit"]')
     if (!submitButton) {
@@ -75,14 +77,12 @@ async function vote(first) {
         chrome.runtime.sendMessage({ message: 'Submit button not found', ignoreReport: true })
         return
     }
-    console.log('Submit button found:', submitButton)
     submitButton.click()
 
     await new Promise(resolve => setTimeout(resolve, 15000))
 
     if (document.querySelector(ALERT_DIALOG_SELECTOR)) {
         const message = document.querySelector(ALERT_DIALOG_SELECTOR).innerText
-        console.log(`message was: ${message}`)
         if (message.length > 10) {
             if (message.toLowerCase().includes('success') || message.toLowerCase().includes('successfully')) {
                 chrome.runtime.sendMessage({ successfully: true })
