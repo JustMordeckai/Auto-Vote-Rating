@@ -2,7 +2,7 @@
 
 > Automated voting extension for game server rating sites
 
-[![Version](https://img.shields.io/badge/version-1.1.1-green.svg)](https://github.com/JustMordeckai/Auto-Vote-Rating/releases)
+[![Version](https://img.shields.io/badge/version-1.2.0-green.svg)](https://github.com/JustMordeckai/Auto-Vote-Rating/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## 📋 Overview
