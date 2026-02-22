@@ -6,7 +6,6 @@ if (typeof loaded2 === 'undefined') {
 }
 
 async function vote(first) {
-    // Corrected selector: removed #voteform and changed #ignn to #ignnn
     const voteBtn = document.querySelector('#voteButton');
     const playerInput = document.querySelector('#ignnn');
 
