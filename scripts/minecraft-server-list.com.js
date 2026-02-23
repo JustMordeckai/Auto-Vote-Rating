@@ -6,11 +6,14 @@ if (typeof loaded2 === 'undefined') {
 }
 
 async function vote(first) {
-    if (document.querySelector('#voteform #voteButton').disabled) {
+    const voteBtn = document.querySelector('#voteButton');
+    const playerInput = document.querySelector('#ignnn');
+
+    if (voteBtn && voteBtn.disabled) {
         await new Promise(resolve => {
             const timer = setInterval(()=>{
                 try {
-                    if (!document.querySelector('#voteform #voteButton').disabled) {
+                    if (!document.querySelector('#voteButton').disabled) {
                         clearInterval(timer)
                         resolve()
                     }
@@ -25,8 +28,16 @@ async function vote(first) {
     if (first === false) return
 
     const project = await getProject()
-    document.querySelector('#voteform #ignn').value = project.nick
-    document.querySelector('#voteform #voteButton').click()
+    
+    // Set player name using the correct ID
+    if (playerInput) {
+        playerInput.value = project.nick;
+    }
+
+    // Click the vote button using the correct ID
+    if (voteBtn) {
+        voteBtn.click();
+    }
 }
 
 function runVote() {
