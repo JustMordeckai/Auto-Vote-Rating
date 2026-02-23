@@ -1618,6 +1618,14 @@ var allProjects = {
         parseURL: (url) => ({id: url.pathname.split('/')[2]}),
         alertManualCaptcha: () => true
     },
+    'topeaglerservers.com': {
+        pageURL: (project) => 'https://topeaglerservers.com/vote/' + project.id,
+        voteURL: (project) => 'https://topeaglerservers.com/vote/' + project.id,
+        projectName: (doc) => doc.querySelector('h2.text-xl')?.textContent.replace('Vote for ', '').trim(),
+        exampleURL: () => ['https://topeaglerservers.com/vote/', '7b6ebcd3', ''],
+        parseURL: (url) => ({id: url.pathname.split('/')[2]}),
+        timeout: () => ({hours: 24})
+    },
     Custom: {
         pageURL: (project) => project.responseURL,
         voteURL: (project) => project.responseURL,
