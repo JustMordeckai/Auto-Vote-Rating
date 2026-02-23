@@ -747,18 +747,18 @@ var allProjects = {
         parseURL: (url) => ({id: url.pathname.split('/')[2]})
     },
     'gtop100.com': {
-        pageURL: (project) => 'https://gtop100.com/topsites/' + project.game + '/sitedetails/' + project.id + '?vote=1',
-        voteURL: (project) => 'https://gtop100.com/topsites/' + project.game + '/sitedetails/' + project.id + '?vote=1&pingUsername=' + project.nick,
+        pageURL: (project) => 'https://gtop100.com/' + project.game + '/' + project.id,
+        voteURL: (project) => 'https://gtop100.com/' + project.game + '/' + project.id + '?vote=1&pingUsername=' + project.nick,
         projectName: (doc) => doc.querySelector('[itemprop="name"]').textContent.trim(),
-        exampleURL: () => ['https://gtop100.com/topsites/MapleStory/sitedetails/', 'Ristonia--v224--98344', '?vote=1&pingUsername=kingcloudian'],
+        exampleURL: () => ['https://gtop100.com/MapleStory/', 'Ristonia--v224--98344', '?vote=1&pingUsername=kingcloudian'],
         parseURL: (url) => {
             const project = {}
             const paths = url.pathname.split('/')
-            project.game = paths[2]
-            project.id = paths[4]
+            project.game = paths[1]
+            project.id = paths[2]
             return project
         },
-        exampleURLGame: () => ['https://gtop100.com/topsites/', 'MapleStory', '/sitedetails/Ristonia--v224--98344?vote=1&pingUsername=kingcloudian'],
+        exampleURLGame: () => ['https://gtop100.com/', 'MapleStory', '/Ristonia--v224--98344?vote=1&pingUsername=kingcloudian'],
         gameList: () => new Map([
             ['4Story', '4Story'],
             ['ACE-Online', 'ACE Online'],
