@@ -59,7 +59,7 @@
     "description": "Input. Custom"
   },
   "optionsExtension": {
-    "message": "Expansion options",
+    "message": "Extension options",
     "description": "Header. Options"
   },
   "settings": {
