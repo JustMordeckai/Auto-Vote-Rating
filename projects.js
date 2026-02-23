@@ -1618,6 +1618,14 @@ var allProjects = {
         parseURL: (url) => ({id: url.pathname.split('/')[2]}),
         alertManualCaptcha: () => true
     },
+    'minecraftservers.page': {
+        pageURL: (project) => 'https://minecraftservers.page/servers/' + project.id + '/vote',
+        voteURL: (project) => 'https://minecraftservers.page/servers/' + project.id + '/vote',
+        projectName: (doc) => doc.querySelector('.voteForm h2')?.textContent.replace('Vote for ', '').trim(),
+        exampleURL: () => ['https://minecraftservers.page/servers/', 'pikanetwork', '/vote'],
+        parseURL: (url) => ({id: url.pathname.split('/')[2]}),
+        timeout: () => ({hours: 24})
+    },
     'topeaglerservers.com': {
         pageURL: (project) => 'https://topeaglerservers.com/vote/' + project.id,
         voteURL: (project) => 'https://topeaglerservers.com/vote/' + project.id,
