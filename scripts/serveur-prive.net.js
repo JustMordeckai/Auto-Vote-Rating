@@ -1,72 +1,151 @@
+// serveur-prive.net migrated its vote form to an AJAX submission (Vite build).
+// The old selectors are gone -> new behaviour:
+//  - Already voted : `.message-blured[data-vote-cooldown]` overlay holding `.timer[data-counter="<ISO>"]`
+//                    (server-rendered on load, or inserted after a successful vote).
+//  - Captcha       : MTCaptcha. For a subscriber (no captcha), `input.mtcaptcha-verifiedtoken` fills itself.
+//  - Success       : `.ajax-msg .message-success` + `form#voteForm[data-vote-cooldown-pending="true"]`.
+//  - Error         : `.ajax-msg .message-danger` (text = server message).
+
 async function vote(first) {
-    if (checkAnswer()) return
+    // The form is submitted via AJAX (no page reload), so a single watch loop
+    // is enough to handle every state.
+    if (window.__spnVoteStarted) return
+    window.__spnVoteStarted = true
 
     const project = await getProject()
-    document.querySelector('#username').value = project.nick
 
-    //Если у нас не настоящая капча, значит голосуем сразу без капчи
-    if (document.querySelector('#voteForm img[alt="Hcaptcha"]')) {
-        document.querySelector('#voteBtn').click()
-    } else {
-        chrome.runtime.sendMessage({captcha: true})
-    }
-}
+    let voteClicked = false      // we triggered the vote
+    let captchaAlerted = false   // manual-captcha notification already sent
+    let attempts = 0             // number of vote clicks performed
+    let ticks = 0                // loop iterations (1/second)
+    const MAX_ATTEMPTS = 3
+    const WAIT_TOKEN_TICKS = 10  // grace period before asking for a manual captcha solve
+    const MAX_TICKS = 120        // safety net if no state is recognized anymore (layout changed again?)
 
-const timer = setInterval(()=>{
-    try {
-        if (checkAnswer()) {
-            clearInterval(timer)
-        }
-    } catch (e) {
-        clearInterval(timer)
-        throwError(e)
-    }
-}, 1000)
+    // Returns true once a terminal state has been reported (the loop can stop)
+    function tick() {
+        ticks++
 
-const timer2 = setInterval(() => {
-    try {
-        if (document.querySelector('div.iconcaptcha-modal__body-title')?.textContent?.includes?.('Complété')) {
-            clearInterval(timer2)
-            document.querySelector('#voteBtn').click()
-        }
-    } catch (error) {
-        clearInterval(timer2)
-        throwError(error)
-    }
-}, 1000)
-
-function checkAnswer() {
-    //Если есть ошибка
-    if (document.querySelector('.alert.alert-danger')?.innerText.trim?.()?.length) {
-        const request = {}
-        request.message = document.querySelector('.alert.alert-danger').innerText.trim()
-        //Если не удалось пройти капчу
-        if (request.message.includes('captcha') || request.message.includes('pseudo')) {
-            return false
-            //Если вы уже голосовали
-        } else if (request.message.includes('Vous avez déjà voté pour ce serveur')) {
-            chrome.runtime.sendMessage({later: true})
-            return true
-        } else {
-            if ((request.message.toLowerCase().includes('proxy') && request.message.toLowerCase().includes('vpn')) || request.message.toLowerCase().includes('votre ip') || request.message.toLowerCase().includes('erreur interne')) {
+        // 1. AJAX message returned by the server (error shown in-place)
+        const errEl = document.querySelector('.ajax-msg .message-danger')
+        if (errEl && errEl.textContent.trim().length) {
+            const message = errEl.textContent.replace(/\s+/g, ' ').trim()
+            const low = message.toLowerCase()
+            // Already voted (private/incognito: no overlay, the cooldown comes back as this AJAX
+            // error with a relative time, e.g. "Prochain vote dans 54 minutes 23 secondes").
+            if (low.includes('déjà voté')) {
+                const ms = parseFrenchDuration(message)
+                chrome.runtime.sendMessage({later: ms != null ? Date.now() + ms : true})
+                return true
+            }
+            // Invalid/expired captcha: wait for a fresh solve then retry
+            if (low.includes('captcha')) {
+                voteClicked = false
+                if (!captchaAlerted) {
+                    captchaAlerted = true
+                    chrome.runtime.sendMessage({captcha: true})
+                }
+                return false
+            }
+            // Other errors (IP, proxy/VPN, network, internal error...)
+            const request = {message}
+            if ((low.includes('proxy') && low.includes('vpn')) || low.includes('vpn')
+                || low.includes('votre ip') || low.includes('erreur interne')
+                || low.includes('réseau') || low.includes('interne')) {
                 request.ignoreReport = true
             }
             chrome.runtime.sendMessage(request)
+            return true
         }
-        return true
+
+        // 2. Successful vote (only after our own click)
+        if (voteClicked && (document.querySelector('.ajax-msg .message-success')
+                || document.querySelector('#voteForm[data-vote-cooldown-pending="true"]')
+                || document.querySelector('.message-blured'))) {
+            chrome.runtime.sendMessage({successfully: true})
+            return true
+        }
+
+        // 3. Already voted, detected on load (cooldown overlay, before any click).
+        // Two markup variants exist: server-rendered `.message-blured` (no data-vote-cooldown attr,
+        // counter like "...+00:00") and client-inserted `.message-blured[data-vote-cooldown]`
+        // (counter like "...Z"). Match both via the inner [data-counter]; Date.parse handles both.
+        if (!voteClicked) {
+            const counter = document.querySelector('.message-blured [data-counter]')
+            if (counter) {
+                const ts = Date.parse(counter.getAttribute('data-counter'))
+                chrome.runtime.sendMessage({later: Number.isNaN(ts) ? true : ts})
+                return true
+            }
+        }
+
+        // 4. Form ready: fill the username and vote as soon as the captcha is solved
+        if (!voteClicked && attempts < MAX_ATTEMPTS) {
+            const btn = document.querySelector('#voteBtn:not([disabled])')
+            if (btn) {
+                const form = btn.closest('form') || document
+                const usernameInput = form.querySelector('#username')
+                if (usernameInput && !usernameInput.disabled && usernameInput.value !== project.nick) {
+                    usernameInput.value = project.nick
+                }
+
+                const hasCaptcha = !!form.querySelector('.mtcaptcha') || !!form.querySelector('.field-captcha')
+                if (!hasCaptcha) {
+                    // No captcha: vote right away
+                    voteClicked = true
+                    attempts++
+                    btn.click()
+                } else {
+                    const token = form.querySelector('input.mtcaptcha-verifiedtoken')
+                    if (token && token.value && token.value.trim().length) {
+                        // Captcha already validated (no-captcha subscription = token auto-filled) -> vote
+                        voteClicked = true
+                        attempts++
+                        btn.click()
+                    } else if (ticks >= WAIT_TOKEN_TICKS && !captchaAlerted) {
+                        // No automatic solve -> ask for a manual captcha solve
+                        captchaAlerted = true
+                        chrome.runtime.sendMessage({captcha: true})
+                    }
+                }
+            }
+        }
+
+        // Safety net: no state recognized and we are not waiting on a manual captcha
+        if (ticks >= MAX_TICKS && !captchaAlerted && !voteClicked) {
+            chrome.runtime.sendMessage({errorVoteNoElement: 'serveur-prive.net: no vote state detected (the site layout may have changed again)', ignoreReport: true})
+            return true
+        }
+
+        return false
     }
-    // Если мы видим таймер показывающий сколько осталось до следующего голосования
-    if (document.querySelector('#cooldown div.counter')) {
-        const message = document.querySelector('#cooldown div.counter').innerText
-        const numbers = message.match(/\d+/g).map(Number)
-        const milliseconds = (numbers[0] * 60 * 60 * 1000) + (numbers[1] * 60 * 1000) + (numbers[2] * 1000)
-        chrome.runtime.sendMessage({later: Date.now() + milliseconds})
-        return true
+
+    const loop = setInterval(() => {
+        try {
+            if (tick()) clearInterval(loop)
+        } catch (e) {
+            clearInterval(loop)
+            throwError(e)
+        }
+    }, 1000)
+
+    // Immediate first pass (don't wait 1s to detect an already-present cooldown)
+    try {
+        if (tick()) clearInterval(loop)
+    } catch (e) {
+        clearInterval(loop)
+        throwError(e)
     }
-    //Если успешное авто-голосование
-    if (document.querySelector('.alert.alert-success')) {
-        chrome.runtime.sendMessage({successfully: true})
-        return true
-    }
-    return false
+}
+
+// Parse a French "X heures Y minutes Z secondes" duration into milliseconds.
+// Returns null if no duration is found (handles singular/plural).
+function parseFrenchDuration(text) {
+    const low = text.toLowerCase()
+    const h = low.match(/(\d+)\s*heure/)
+    const m = low.match(/(\d+)\s*minute/)
+    const s = low.match(/(\d+)\s*seconde/)
+    if (!h && !m && !s) return null
+    const ms = (h ? +h[1] * 3600000 : 0) + (m ? +m[1] * 60000 : 0) + (s ? +s[1] * 1000 : 0)
+    return ms > 0 ? ms : null
 }

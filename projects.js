@@ -98,7 +98,6 @@ var allProjects = {
             return project
         },
         timeout: () => ({hours: 1, minutes: 30}),
-        limitedCountVote: () => true,
         alertManualCaptcha: () => true,
         exampleURLGame: () => ['https://serveur-prive.net/', 'minecraft', '/gommehd-net-4932'],
         defaultGame: () => 'minecraft',
