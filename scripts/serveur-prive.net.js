@@ -89,16 +89,18 @@ async function vote(first) {
                     usernameInput.value = project.nick
                 }
 
-                const hasCaptcha = !!form.querySelector('.mtcaptcha') || !!form.querySelector('.field-captcha')
-                if (!hasCaptcha) {
-                    // No captcha: vote right away
+                // EasyVote (paid, no-captcha) replaces the captcha widget with a "Captcha validé"
+                // image (no .mtcaptcha, no token) -> the captcha is pre-validated, vote right away.
+                const easyVoteValidated = !!form.querySelector('.field-captcha img')
+                const mtcaptcha = form.querySelector('.mtcaptcha')
+                if (easyVoteValidated) {
                     voteClicked = true
                     attempts++
                     btn.click()
-                } else {
+                } else if (mtcaptcha) {
                     const token = form.querySelector('input.mtcaptcha-verifiedtoken')
                     if (token && token.value && token.value.trim().length) {
-                        // Captcha already validated (no-captcha subscription = token auto-filled) -> vote
+                        // Token auto-filled (no-captcha subscription) -> vote
                         voteClicked = true
                         attempts++
                         btn.click()
@@ -108,6 +110,7 @@ async function vote(first) {
                         chrome.runtime.sendMessage({captcha: true})
                     }
                 }
+                // else: captcha widget not rendered yet -> wait for the next tick
             }
         }
 
