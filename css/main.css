@@ -260,6 +260,8 @@ nav div.navigation > button.active img {
 #modals .modal#loading img {
     display: block;
     margin: 0 auto;
+    width: 48px;
+    height: 48px;
 }
 
 #modals .modal .head {
@@ -791,6 +793,12 @@ nav div.navigation > button.active img {
     text-align: center;
     margin: 10px 0;
     color: var(--text-secondary);
+}
+
+#load img {
+    width: 48px;
+    height: 48px;
+    margin: 10px auto 0;
 }
 
 [data-resource="passageCaptcha"] {

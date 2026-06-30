@@ -68,7 +68,7 @@ async function createNotif(message, type, options = {}) {
 
     if (type !== 'hint') {
         let imgBlock = document.createElement('img')
-        imgBlock.src = 'images/notif/'+type+'.png'
+        imgBlock.src = 'images/notif/'+type+'.svg'
         notif.append(imgBlock)
         let progressBlock = document.createElement('div')
         progressBlock.classList.add('progress')
