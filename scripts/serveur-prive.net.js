@@ -2,7 +2,9 @@
 // The old selectors are gone -> new behaviour:
 //  - Already voted : `.message-blured[data-vote-cooldown]` overlay holding `.timer[data-counter="<ISO>"]`
 //                    (server-rendered on load, or inserted after a successful vote).
-//  - Captcha       : MTCaptcha. For a subscriber (no captcha), `input.mtcaptcha-verifiedtoken` fills itself.
+//  - Captcha       : MTCaptcha (`input.mtcaptcha-verifiedtoken` auto-fills for token subscribers).
+//                    EasyVote subscribers get NO captcha widget -> the `.form-vote-bottom-title
+//                    strong.on` "ON" toggle marks it (non-EasyVote shows `strong.off` "OFF"); vote directly.
 //  - Success       : `.ajax-msg .message-success` + `form#voteForm[data-vote-cooldown-pending="true"]`.
 //  - Error         : `.ajax-msg .message-danger` (text = server message).
 
@@ -89,15 +91,15 @@ async function vote(first) {
                     usernameInput.value = project.nick
                 }
 
-                // EasyVote (paid, no-captcha) replaces the captcha widget with a "Captcha validé"
-                // image (no .mtcaptcha, no token) -> the captcha is pre-validated, vote right away.
-                const easyVoteValidated = !!form.querySelector('.field-captcha img')
+                // Decide whether a captcha must be solved before voting. The reliable discriminator is
+                // the presence of the MTCaptcha widget:
+                //  - Non-EasyVote  : `.mtcaptcha` is rendered (subscribers get an auto-filled token;
+                //                    everyone else solves it manually). The toggle shows `strong.off` "OFF".
+                //  - EasyVote (paid, no-captcha): no `.mtcaptcha` widget at all; the form just shows the
+                //                    EasyVote toggle `.form-vote-bottom-title strong.on` "ON". (Older
+                //                    layouts showed a "Captcha validé" image in `.field-captcha`.)
                 const mtcaptcha = form.querySelector('.mtcaptcha')
-                if (easyVoteValidated) {
-                    voteClicked = true
-                    attempts++
-                    btn.click()
-                } else if (mtcaptcha) {
+                if (mtcaptcha) {
                     const token = form.querySelector('input.mtcaptcha-verifiedtoken')
                     if (token && token.value && token.value.trim().length) {
                         // Token auto-filled (no-captcha subscription) -> vote
@@ -109,8 +111,19 @@ async function vote(first) {
                         captchaAlerted = true
                         chrome.runtime.sendMessage({captcha: true})
                     }
+                } else {
+                    // No MTCaptcha widget: vote once EasyVote is confirmed ("ON" toggle or legacy
+                    // "Captcha validé" image), or after a grace period if no captcha ever renders
+                    // (degrades gracefully -> a genuinely missing captcha is caught by the server's
+                    // AJAX error handled above).
+                    const easyVote = form.querySelector('.form-vote-bottom-title strong.on')
+                        || form.querySelector('.field-captcha img')
+                    if (easyVote || ticks >= WAIT_TOKEN_TICKS) {
+                        voteClicked = true
+                        attempts++
+                        btn.click()
+                    }
                 }
-                // else: captcha widget not rendered yet -> wait for the next tick
             }
         }
 
