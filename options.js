@@ -489,7 +489,7 @@ function generateBtnListRating(rating, count) {
         const label = document.createElement('label')
         label.setAttribute('data-resource', 'passageCaptcha')
         label.textContent = chrome.i18n.getMessage('passageCaptcha')
-        label.style.color = '#f1af4c'
+        label.style.color = 'var(--warn)'
         const link = document.createElement('a')
         link.classList.add('link')
         link.target = 'blank_'
@@ -1555,11 +1555,11 @@ function createMessage(text, level) {
     const span = document.createElement('span')
     if (level) {
         if (level === 'success') {
-            span.style.color = '#4CAF50'
+            span.style.color = 'var(--success)'
         } else if (level === 'error') {
-            span.style.color = '#da5e5e'
+            span.style.color = 'var(--danger)'
         } else if (level === 'warn') {
-            span.style.color = '#f1af4c'
+            span.style.color = 'var(--warn)'
         }
     }
     span.textContent = text

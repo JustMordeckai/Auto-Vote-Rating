@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="color-scheme" content="dark">
         <title data-resource="appName"></title>
         <link rel="stylesheet" href="css/reset.css">
         <link rel="stylesheet" href="css/main.css">
@@ -453,30 +454,31 @@
             <div id="help" class="tabcontent" style="display: none;">
                 <h4 data-resource="help"></h4>
                 <hr color="#5A5A5C">
-                <div class="aboutProject">
-                	<a target="_blank" class="social"><img src="images/icons/ds.svg" alt="ds"></a>
-                    <div class="cont">
-                        <div data-resource="version" class="version"></div>
-                    	<div data-resource="developers"></div>
-                    	<div data-resource="developer">
-                    	    <a class="link" target="_blank" href="https://github.com/JustMordeckai">
-                    	        <span>JustMordeckai</span>
-                    	    </a>
-                    	</div>
-                    	<div data-resource="developer">
-                    	    <span>Original: </span>
-                    	    <a class="link" target="_blank" href="https://discord.com/users/441823506200788992">
-                    	        <span>Serega007</span>
-                    	    </a>
-                    	</div>
-                    	<div data-resource="designer">
-                    	    <a class="link" target="_blank" href="https://discord.com/users/279936883277168640">
-                    	        <span>Qworte</span>
-                    	    </a>
-                    	</div>
-                        <div data-resource="translated"></div>
-                    	<div class="free" data-resource="itsFree"></div>
+                <div class="aboutPage">
+                    <div data-resource="version" class="version"></div>
+                    <div class="contribGroups">
+                        <div class="contribGroup">
+                            <div class="contribGroupTitle" data-resource="formerContributors"></div>
+                            <div class="contribRow">
+                                <span class="contribRole" data-resource="originalDeveloper"></span>
+                                <a class="link" target="_blank" href="https://discord.com/users/441823506200788992"><span>Serega007</span></a>
+                            </div>
+                            <div class="contribRow">
+                                <span class="contribRole" data-resource="designer"></span>
+                                <a class="link" target="_blank" href="https://discord.com/users/279936883277168640"><span>Qworte</span></a>
+                            </div>
+                            <div class="contribNote" data-resource="archivedNote"></div>
+                        </div>
+                        <div class="contribGroup current">
+                            <div class="contribGroupTitle" data-resource="currentMaintainer"></div>
+                            <div class="contribRow">
+                                <a class="link" target="_blank" href="https://github.com/JustMordeckai"><span>JustMordeckai</span></a>
+                            </div>
+                            <div class="contribNote" data-resource="maintainedSince"></div>
+                        </div>
                     </div>
+                    <div data-resource="translated" class="translatedNote"></div>
+                    <div class="free" data-resource="itsFree"></div>
                     <a target="_blank" href="https://github.com/JustMordeckai/Auto-Vote-Rating" class="social"><img src="images/icons/git.svg" alt="git"></a>
                 </div>
             </div>

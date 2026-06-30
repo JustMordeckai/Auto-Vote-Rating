@@ -384,6 +384,21 @@
   "designer": {
     "message": "Designer:"
   },
+  "formerContributors": {
+    "message": "Frühere Mitwirkende"
+  },
+  "currentMaintainer": {
+    "message": "Aktueller Betreuer"
+  },
+  "originalDeveloper": {
+    "message": "Ursprünglicher Entwickler:"
+  },
+  "maintainedSince": {
+    "message": "Fork wird seit dem 12. November 2025 betreut."
+  },
+  "archivedNote": {
+    "message": "Ursprüngliches Repository vom Eigentümer am 15. September 2025 archiviert (schreibgeschützt)."
+  },
   "itsFree": {
     "message": "Die Erweiterung ist absolut kostenlos!"
   },

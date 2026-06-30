@@ -418,6 +418,21 @@
   "designer": {
     "message": "Designer:"
   },
+  "formerContributors": {
+    "message": "Former contributors"
+  },
+  "currentMaintainer": {
+    "message": "Current maintainer"
+  },
+  "originalDeveloper": {
+    "message": "Original developer:"
+  },
+  "maintainedSince": {
+    "message": "Fork maintained since November 12, 2025."
+  },
+  "archivedNote": {
+    "message": "Original repository archived by its owner on September 15, 2025 (read-only)."
+  },
   "itsFree": {
     "message": "Extension is absolutely free!"
   },

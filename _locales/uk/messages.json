@@ -346,6 +346,21 @@
   "designer": {
     "message": "Дизайнер:"
   },
+  "formerContributors": {
+    "message": "Колишні учасники"
+  },
+  "currentMaintainer": {
+    "message": "Поточний супровідник"
+  },
+  "originalDeveloper": {
+    "message": "Оригінальний розробник:"
+  },
+  "maintainedSince": {
+    "message": "Форк підтримується з 12 листопада 2025 року."
+  },
+  "archivedNote": {
+    "message": "Оригінальний репозиторій заархівовано власником 15 вересня 2025 року (лише для читання)."
+  },
   "itsFree": {
     "message": "Розширення поширюється абсолютно безкоштовно!"
   },
