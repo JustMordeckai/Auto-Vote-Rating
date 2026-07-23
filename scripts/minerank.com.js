@@ -84,7 +84,6 @@ async function vote(first) {
             submitButton.click()
             clearInterval(submitInterval)
         }
-        console.log("submit!", submitButton)
     }, 1000)
 
     await new Promise(resolve => setTimeout(resolve, 15000))
