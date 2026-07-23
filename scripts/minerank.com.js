@@ -1,3 +1,6 @@
+const ALERT_DIALOG_SELECTOR = 'div[role=alertdialog]'
+
+
 function checkAlreadyVoted() {
     const alreadyVotedSelectors = ['div.bg-stone-400\\/20', 'div.bg-red-200', 'div.flex.items-center.gap-1.text-sm.mb-4']
     for (const selector of alreadyVotedSelectors) {
@@ -18,9 +21,39 @@ function checkAlreadyVoted() {
     return false
 }
 
+// true will stop interval, false will continue
+async function clickVoteButton() {
+    const submitButton = document.querySelector('form button[type="submit"]')
+    if (!submitButton) {
+        console.error('ERROR: Submit button not found')
+        chrome.runtime.sendMessage({ message: 'Submit button not found', ignoreReport: true })
+        return false
+    }
+
+    if (submitButton.disabled) {
+        return false
+    }
+
+    submitButton.click()
+
+    await new Promise(resolve => setTimeout(resolve, 15000))
+
+    if (document.querySelector(ALERT_DIALOG_SELECTOR)) {
+        const message = document.querySelector(ALERT_DIALOG_SELECTOR).innerText
+        if (message.length > 10) {
+            if (message.toLowerCase().includes('success') || message.toLowerCase().includes('successfully')) {
+                chrome.runtime.sendMessage({ successfully: true })
+                return true
+            }
+        }
+    } else if (checkAlreadyVoted()){
+        return true
+    }
+}
+
+
 async function vote(first) {
     const USERNAME_FIELD_SELECTOR = 'input[name="mc_username"]'
-    const ALERT_DIALOG_SELECTOR = 'div[role=alertdialog]'
 
     await new Promise(resolve => setTimeout(resolve, 1000))
 
@@ -72,31 +105,13 @@ async function vote(first) {
     const usernameField = document.querySelector(USERNAME_FIELD_SELECTOR)
     setValueAndTrigger(usernameField, project.nick)
 
-    const submitButton = document.querySelector('form button[type="submit"]')
-    if (!submitButton) {
-        console.error('ERROR: Submit button not found')
-        chrome.runtime.sendMessage({ message: 'Submit button not found', ignoreReport: true })
-        return
+    async function runVoteLoop() {
+        const shouldStop = await clickVoteButton()
+        if (shouldStop) {
+            return
+        }
+        setTimeout(runVoteLoop, 1000)
     }
 
-    const submitInterval = setInterval(() => {
-        if (!submitButton.disabled) {
-            submitButton.click()
-            clearInterval(submitInterval)
-        }
-    }, 1000)
-
-    await new Promise(resolve => setTimeout(resolve, 15000))
-
-    if (document.querySelector(ALERT_DIALOG_SELECTOR)) {
-        const message = document.querySelector(ALERT_DIALOG_SELECTOR).innerText
-        if (message.length > 10) {
-            if (message.toLowerCase().includes('success') || message.toLowerCase().includes('successfully')) {
-                chrome.runtime.sendMessage({ successfully: true })
-                return
-            }
-        }
-    } else if (checkAlreadyVoted()){
-        return
-    }
+    runVoteLoop()
 }
