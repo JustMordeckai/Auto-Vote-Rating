@@ -1,5 +1,27 @@
 const ALERT_DIALOG_SELECTOR = 'div[role=alertdialog]'
+const USERNAME_FIELD_SELECTOR = 'input[name="mc_username"]'
+const PAGE_READY_TIMEOUT = 15
+const VOTE_RESULT_TIMEOUT = 15
+const MAX_CAPTCHA_WAIT = 30
+const MAX_VOTE_CLICKS = 3
 
+// Polls once a second until the condition returns something truthy, null once the timeout is over.
+// setInterval is used on purpose: hacktimer.js reroutes the timers and an awaited setTimeout can hang
+function poll(condition, timeout) {
+    return new Promise(resolve => {
+        let ticks = 0
+        const timer = setInterval(() => {
+            const result = condition()
+            if (result) {
+                clearInterval(timer)
+                resolve(result)
+            } else if (++ticks >= timeout) {
+                clearInterval(timer)
+                resolve(null)
+            }
+        }, 1000)
+    })
+}
 
 function checkAlreadyVoted() {
     const alreadyVotedSelectors = ['div.bg-stone-400\\/20', 'div.bg-red-200', 'div.flex.items-center.gap-1.text-sm.mb-4']
@@ -21,41 +43,51 @@ function checkAlreadyVoted() {
     return false
 }
 
-// true will stop interval, false will continue
+// 'stop' = the vote is over, 'waiting' = the captcha has not solved itself yet, 'retry' = clicked without an answer
 async function clickVoteButton() {
     const submitButton = document.querySelector('form button[type="submit"]')
     if (!submitButton) {
         console.error('ERROR: Submit button not found')
         chrome.runtime.sendMessage({ message: 'Submit button not found', ignoreReport: true })
-        return false
+        return 'stop'
     }
 
+    // The button stays disabled as long as the Turnstile captcha has not solved itself
     if (submitButton.disabled) {
-        return false
+        return 'waiting'
     }
 
     submitButton.click()
 
-    await new Promise(resolve => setTimeout(resolve, 15000))
+    const result = await poll(() => {
+        if (document.querySelector('div.bg-green-100')) return { successfully: true }
 
-    if (document.querySelector(ALERT_DIALOG_SELECTOR)) {
-        const message = document.querySelector(ALERT_DIALOG_SELECTOR).innerText
-        if (message.length > 10) {
-            if (message.toLowerCase().includes('success') || message.toLowerCase().includes('successfully')) {
-                chrome.runtime.sendMessage({ successfully: true })
-                return true
-            }
+        const message = document.querySelector(ALERT_DIALOG_SELECTOR)?.innerText?.trim()
+        if (message && message.length > 10) {
+            // The site asks us to wait, the vote has not been taken into account yet
+            if (message.toLowerCase().includes('hang on')) return null
+            if (message.toLowerCase().includes('success')) return { successfully: true }
+            return { message, ignoreReport: true }
         }
-    } else if (checkAlreadyVoted()){
-        return true
-    }
+
+        // checkAlreadyVoted() reports the result itself
+        if (checkAlreadyVoted()) return { reported: true }
+
+        return null
+    }, VOTE_RESULT_TIMEOUT)
+
+    if (!result) return 'retry'
+    if (!result.reported) chrome.runtime.sendMessage(result)
+    return 'stop'
 }
 
 
 async function vote(first) {
-    const USERNAME_FIELD_SELECTOR = 'input[name="mc_username"]'
-
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // The rating renders its page on the client side, wait until there is something to work with
+    await poll(() => document.querySelector(USERNAME_FIELD_SELECTOR)
+        || document.querySelector(ALERT_DIALOG_SELECTOR)
+        || document.querySelector('div.bg-green-100')
+        || document.querySelector('body > main > div > p'), PAGE_READY_TIMEOUT)
 
     if (document.querySelector(ALERT_DIALOG_SELECTOR)?.textContent.toLowerCase().includes('hang on')) {
         return
@@ -103,15 +135,32 @@ async function vote(first) {
     }
 
     const usernameField = document.querySelector(USERNAME_FIELD_SELECTOR)
+    if (!usernameField) {
+        chrome.runtime.sendMessage({ message: 'Username field not found', ignoreReport: true })
+        return
+    }
     setValueAndTrigger(usernameField, project.nick)
 
-    async function runVoteLoop() {
-        const shouldStop = await clickVoteButton()
-        if (shouldStop) {
-            return
+    let waits = 0
+    let clicks = 0
+    let running = false
+    const voteTimer = setInterval(async () => {
+        if (running) return
+        running = true
+        try {
+            const state = await clickVoteButton()
+            if (state === 'stop') {
+                clearInterval(voteTimer)
+            } else if (state === 'waiting' && ++waits >= MAX_CAPTCHA_WAIT) {
+                // The vote button never became clickable, the captcha did not solve itself
+                clearInterval(voteTimer)
+                chrome.runtime.sendMessage({ captcha: true })
+            } else if (state === 'retry' && ++clicks >= MAX_VOTE_CLICKS) {
+                clearInterval(voteTimer)
+                chrome.runtime.sendMessage({ message: 'The rating did not answer the vote', ignoreReport: true })
+            }
+        } finally {
+            running = false
         }
-        setTimeout(runVoteLoop, 1000)
-    }
-
-    runVoteLoop()
+    }, 1000)
 }
