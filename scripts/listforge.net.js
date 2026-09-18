@@ -1,6 +1,7 @@
 const TURNSTILE_TIMEOUT = 60
 
 let submitted = false
+let captchaReported = false
 
 async function vote(first) {
     //Пилюля от жадности
@@ -98,7 +99,11 @@ async function vote(first) {
             }, 1000)
         })
         if (!solved) {
-            if (first) chrome.runtime.sendMessage({captcha: true})
+            // Whichever call times out, the user has to know the captcha never solved itself
+            if (!captchaReported) {
+                captchaReported = true
+                chrome.runtime.sendMessage({captcha: true})
+            }
             return
         }
     //Если на странице есть hCaptcha то мы ждём её решения
