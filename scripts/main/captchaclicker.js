@@ -34,7 +34,8 @@ function run() {
                 && isScrolledIntoView(document.querySelector('#recaptcha-anchor > div.recaptcha-checkbox-border'))
                 && document.querySelector('#recaptcha-anchor > div.recaptcha-checkbox-border').style.display !== 'none') {
                 //Если в капче есть какая-либо ошибка, то капчу не стоит проходить
-                if (document.querySelector('.rc-anchor-error-msg-container').style.display !== 'none' && document.querySelector('.rc-anchor-error-msg-container').textContent.length > 0) return
+                const errorContainer = document.querySelector('.rc-anchor-error-msg-container')
+                if (errorContainer != null && errorContainer.style.display !== 'none' && errorContainer.textContent.length > 0) return
                 document.querySelector('#recaptcha-anchor > div.recaptcha-checkbox-border').click()
                 clearInterval(timer1)
             }
@@ -49,14 +50,15 @@ function run() {
                 chrome.runtime.sendMessage({captchaPassed: true})
             }
 
-            if (document.querySelector('.rc-anchor-error-msg-container').style.display !== 'none' && document.querySelector('.rc-anchor-error-msg-container').textContent.length > 0) {
-                const text = document.querySelector('.rc-anchor-error-msg-container').textContent
+            const errorContainer = document.querySelector('.rc-anchor-error-msg-container')
+            if (errorContainer != null && errorContainer.style.display !== 'none' && errorContainer.textContent.length > 0) {
+                const text = errorContainer.textContent
                 if (text.includes('Try reloading the page')) {
                     document.location.reload()
                 } else {
                     // https://i.imgur.com/WJ3ce9s.png
                     if (!text.includes('Время проверки истекло') && !text.includes('Verification challenge expired') && !text.includes('Verification expired') && !text.includes('La validation a expiré') && !text.includes('Platnost výzvy ověření vypršela') && !text.includes('verificación caducó')) {
-                        chrome.runtime.sendMessage({errorCaptcha: document.querySelector('.rc-anchor-error-msg-container').textContent})
+                        chrome.runtime.sendMessage({errorCaptcha: text})
                         clearInterval(timer2)
                     }
                 }
@@ -135,7 +137,7 @@ function run() {
                 chrome.runtime.sendMessage({captcha: true})
             } else if (document.querySelector('head > yandex-captcha-solver') != null && document.querySelector('div[style="text-align: right; color: rgb(218, 94, 94);"]') != null) {
                 chrome.runtime.sendMessage({errorCaptcha: document.querySelector('div[style="text-align: right; color: rgb(218, 94, 94);"]').textContent})
-                clearInterval(timer5)
+                clearInterval(timer6)
             }
         }, 1000)
 
@@ -167,7 +169,7 @@ function run() {
                 window.solvedCaptcha = true
                 chrome.runtime.sendMessage({captchaPassed: true})
             }
-        })
+        }, 1000)
     }
 }
 
