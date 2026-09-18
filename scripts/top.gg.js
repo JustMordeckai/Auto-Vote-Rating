@@ -81,7 +81,7 @@ async function vote(first) {
             clearInterval(timer2)
             throwError(e)
         }
-    })
+    }, 1000)
 
     // TODO иногда сайт просто зависает на "You must be logged in to vote." или "You will be able to vote after this ad.", просто втупую через некоторое время перезагружаем страницу
     setTimeout(() => {

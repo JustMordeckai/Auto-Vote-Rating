@@ -57,4 +57,4 @@ const timer = setInterval(async () => {
         clearInterval(timer)
         throwError(e)
     }
-})
+}, 1000)

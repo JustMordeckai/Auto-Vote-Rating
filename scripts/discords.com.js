@@ -59,7 +59,7 @@ async function vote(first) {
                         clearInterval(timer)
                         throwError(error)
                     }
-                })
+                }, 1000)
             })
         }
 
