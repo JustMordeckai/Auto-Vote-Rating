@@ -85,9 +85,10 @@ try {
     }
 
     if ($manifest.default_locale) {
-        $defaultMessages = Join-Path $stage "_locales\$($manifest.default_locale)\messages.json"
+        # Nested Join-Path keeps this working on the Linux runner and on Windows PowerShell
+        $defaultMessages = Join-Path (Join-Path (Join-Path $stage '_locales') $manifest.default_locale) 'messages.json'
         if (-not (Test-Path $defaultMessages)) {
-            throw "The default locale _locales\$($manifest.default_locale) has no messages.json"
+            throw "The default locale _locales/$($manifest.default_locale) has no messages.json"
         }
     }
 
