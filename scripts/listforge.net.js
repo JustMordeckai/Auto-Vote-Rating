@@ -1,3 +1,7 @@
+const TURNSTILE_TIMEOUT = 60
+
+let submitted = false
+
 async function vote(first) {
     //Пилюля от жадности
     if (document.getElementById('adblock-notice')) document.getElementById('adblock-notice').style.display = 'none'
@@ -78,8 +82,27 @@ async function vote(first) {
         return
     }
 
+    // Cloudflare Turnstile is invisible and solves itself, we only wait for the token it writes into the form
+    if (document.querySelector('.cf-turnstile')) {
+        const solved = await new Promise(resolve => {
+            let ticks = 0
+            const timer4 = setInterval(() => {
+                const field = document.querySelector('input[name="cf-turnstile-response"]')
+                if (field != null && field.value.length > 0) {
+                    clearInterval(timer4)
+                    resolve(true)
+                } else if (++ticks >= TURNSTILE_TIMEOUT) {
+                    clearInterval(timer4)
+                    resolve(false)
+                }
+            }, 1000)
+        })
+        if (!solved) {
+            if (first) chrome.runtime.sendMessage({captcha: true})
+            return
+        }
     //Если на странице есть hCaptcha то мы ждём её решения
-    if ((document.querySelector('div.h-captcha') || document.querySelector('.cf-turnstile') || document.querySelector('#captcha-block')) && first) {
+    } else if ((document.querySelector('div.h-captcha') || document.querySelector('#captcha-block')) && first) {
         return
     }
 
@@ -125,6 +148,11 @@ async function vote(first) {
         }
 
         document.getElementById('nickname').value = project.nick
+
+        // vote() can be called a second time when the captcha reports itself as solved
+        if (submitted) return
+        submitted = true
+
         //Кликаем проголосовать, если нет hCaptcha
         if (document.getElementById('voteBtn') != null) {
             document.getElementById('voteBtn').click()
