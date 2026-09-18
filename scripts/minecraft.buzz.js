@@ -4,7 +4,8 @@ async function vote(first) {
     const project = await getProject()
     document.getElementById('username-input').value = project.nick
     if (first) {
-        document.querySelector('a#submitter').click()
+        // The site turned the submit link into a <button>, it opens the countdown then the Turnstile modal
+        document.querySelector('#submitter').click()
     } else {
         document.querySelector('#vote button[type="submit"]').click()
     }
