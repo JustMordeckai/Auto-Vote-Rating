@@ -1245,7 +1245,8 @@ var allProjects = {
             project.id = project.id.replace('minecraft-server-', '')
             return project
         },
-        oneProject: () => 1
+        oneProject: () => 1,
+        alertManualCaptcha: () => true
     },
     'pixelmon-server-list.com': {
         pageURL: (project) => 'https://pixelmon-server-list.com/server/' + project.id,
