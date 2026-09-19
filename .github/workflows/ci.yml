@@ -51,7 +51,7 @@ jobs:
           fi
           echo "$(unzip -Z1 build/*.zip | wc -l) files, none of them private"
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: auto-vote-rating
           path: build/*.zip
