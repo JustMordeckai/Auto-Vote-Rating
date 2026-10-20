@@ -1061,11 +1061,14 @@ var allProjects = {
         limitedCountVote: () => true
     },
     'serveur-minecraft-vote.fr': {
-        pageURL: (project) => 'https://serveur-minecraft-vote.fr/serveurs/' + project.id + '/vote',
-        voteURL: (project) => 'https://serveur-minecraft-vote.fr/serveurs/' + project.id + '/vote',
-        projectName: (doc) => doc.querySelector('.server-name').textContent,
-        exampleURL: () => ['https://serveur-minecraft-vote.fr/serveurs/', 'ectalia.425', '/vote'],
-        parseURL: (url) => ({id: url.pathname.split('/')[2]}),
+        // Old projects store "slug.id" (e.g. "ectalia.425"), the site now only answers on the numeric id
+        pageURL: (project) => 'https://serveur-minecraft-vote.fr/serveur/' + String(project.id).split('.').pop() + '/voter',
+        voteURL: (project) => 'https://serveur-minecraft-vote.fr/serveur/' + String(project.id).split('.').pop() + '/voter',
+        // The page is rendered by React, the server data is embedded as JSON
+        projectName: (doc) => JSON.parse(doc.querySelector('#new-design-data').textContent).serverPage.name,
+        exampleURL: () => ['https://serveur-minecraft-vote.fr/serveur/', '1959', '/voter'],
+        // Handles both /serveur/1959/voter and the legacy /serveurs/cactaia.1959/vote
+        parseURL: (url) => ({id: url.pathname.split('/')[2].split('.').pop()}),
         timeout: () => ({hours: 1, minutes: 30}),
         limitedCountVote: () => true
     },

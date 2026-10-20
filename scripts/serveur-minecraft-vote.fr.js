@@ -1,35 +1,100 @@
-async function vote(/*first*/) {
-    const project = await getProject()
-    document.querySelector('#pseudo').value = project.nick
-    document.querySelector('#vote-action').click()
-}
+// serveur-minecraft-vote.fr moved to a React app (/serveur/<id>/voter) with a visible Cloudflare Turnstile:
+//  - Form     : form.srvp-vote-form, controlled input #vote-pseudo, submit button disabled until Turnstile passes
+//  - Success  : .srvp-vote-done ("Merci pour ton vote !")
+//  - Error    : .srvp-vote-card .field-error (server toast text, cooldown included)
+//  - Flagged  : .srvp-vote-confirm, an anti-cheat question left to the user
+// There is no "already voted" state on load, the cooldown is only returned after a submit.
 
-const timer = setInterval(()=> {
-    try {
-        const msg = document.querySelector('.toast-container')?.textContent
-        if (msg?.length > 0) {
-            const request = {}
-            request.message = msg
-            if (request.message.includes('devez attendre')) {
-                const numbers = request.message.match(/\d+/g).map(Number)
-                let milliseconds
-                if (numbers.length === 1) milliseconds = (numbers[0] * 1000)
-                else if (numbers.length === 2) milliseconds = (numbers[0] * 60 * 1000) + (numbers[1] * 1000)
-                else if (numbers.length === 3) milliseconds = (numbers[0] * 60 * 60 * 1000) + (numbers[1] * 60 * 1000) + (numbers[2] * 1000)
-                else milliseconds = 86400000
-                chrome.runtime.sendMessage({later: Date.now() + milliseconds})
-            } else if (request.message.includes('Félicitation')) {
-                chrome.runtime.sendMessage({successfully: true})
+const TURNSTILE_TIMEOUT = 60
+
+let started = false
+
+async function vote(/*first*/) {
+    // vote() runs again on captchaPassed, the loop below already handles every state
+    if (started) return
+    started = true
+
+    const project = await getProject()
+
+    let submitted = false
+    let captchaAlerted = false
+    let ticks = 0
+
+    // Returns true once a result has been reported
+    function tick() {
+        ticks++
+
+        if (document.querySelector('.srvp-vote-done')) {
+            chrome.runtime.sendMessage({successfully: true})
+            return true
+        }
+
+        const error = document.querySelector('.srvp-vote-card .field-error')
+        if (submitted && error && error.textContent.trim().length) {
+            const message = error.textContent.replace(/\s+/g, ' ').trim()
+            const low = message.toLowerCase()
+            const ms = parseDuration(low)
+            if (ms != null && (low.includes('attendre') || low.includes('déjà') || low.includes('prochain') || low.includes('dans'))) {
+                chrome.runtime.sendMessage({later: Date.now() + ms})
+            } else if (low.includes('déjà voté')) {
+                chrome.runtime.sendMessage({later: true})
             } else {
-                if (request.message.includes('Impossible de voter pour le serveur')) {
+                const request = {message}
+                if (low.includes('impossible de voter pour le serveur')) {
                     request.ignoreReport = true
                 }
                 chrome.runtime.sendMessage(request)
             }
-            clearInterval(timer)
+            return true
         }
-    } catch (e) {
-        clearInterval(timer)
-        throwError(e)
+
+        if (document.querySelector('.srvp-vote-confirm')) {
+            if (!captchaAlerted) {
+                captchaAlerted = true
+                chrome.runtime.sendMessage({captcha: true})
+            }
+            return false
+        }
+
+        const form = document.querySelector('form.srvp-vote-form')
+        if (!form || submitted) return false
+
+        const input = form.querySelector('#vote-pseudo')
+        if (input && input.value !== project.nick) {
+            // React ignores a plain .value assignment, go through the native setter
+            Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, project.nick)
+            input.dispatchEvent(new Event('input', {bubbles: true}))
+            return false
+        }
+
+        const button = form.querySelector('button[type="submit"]')
+        if (button && !button.disabled) {
+            submitted = true
+            button.click()
+        } else if (ticks >= TURNSTILE_TIMEOUT && !captchaAlerted) {
+            // Keep polling, the user can still solve it by hand
+            captchaAlerted = true
+            chrome.runtime.sendMessage({captcha: true})
+        }
+        return false
     }
-}, 500)
+
+    const timer = setInterval(() => {
+        try {
+            if (tick()) clearInterval(timer)
+        } catch (e) {
+            clearInterval(timer)
+            throwError(e)
+        }
+    }, 1000)
+}
+
+// "1 heure 29 minutes 5 secondes" or "1h29m5s" in milliseconds, null if no duration is found
+function parseDuration(text) {
+    const h = text.match(/(\d+)\s*h/)
+    const m = text.match(/(\d+)\s*m(?:in|$|\s|\d)/)
+    const s = text.match(/(\d+)\s*s(?:ec|$|\s)/)
+    if (!h && !m && !s) return null
+    const ms = (h ? +h[1] * 3600000 : 0) + (m ? +m[1] * 60000 : 0) + (s ? +s[1] * 1000 : 0)
+    return ms > 0 ? ms : null
+}
