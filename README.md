@@ -160,6 +160,7 @@ Auto-Vote-Rating is a browser extension that automates voting for your favorite 
 <a href="https://topservers.com/">topservers.com</a>  
 <a href="https://trackyserver.com/">trackyserver.com</a>  
 <a href="https://trackingservers.cloud/">trackingservers.cloud</a>  
+<a href="https://voxelrank.com/">voxelrank.com</a>  
 <a href="https://xtremetop100.com/">xtremetop100.com</a>
 
 ### Discord Bots

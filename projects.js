@@ -1636,6 +1636,16 @@ var allProjects = {
         parseURL: (url) => ({id: url.pathname.split('/')[2]}),
         timeout: () => ({hours: 24})
     },
+    'voxelrank.com': {
+        pageURL: (project) => 'https://voxelrank.com/server/' + project.id,
+        voteURL: (project) => 'https://voxelrank.com/vote/' + project.id,
+        // The h1 also holds the server headline in a span
+        projectName: (doc) => doc.querySelector('h1')?.firstChild?.textContent.trim(),
+        exampleURL: () => ['https://voxelrank.com/vote/', '8709-error-smp', ''],
+        parseURL: (url) => ({id: url.pathname.split('/')[2]}),
+        // Only used when the page gives no countdown, the window opened at 23:00 UTC in October
+        timeout: () => ({hour: 23})
+    },
     Custom: {
         pageURL: (project) => project.responseURL,
         voteURL: (project) => project.responseURL,
