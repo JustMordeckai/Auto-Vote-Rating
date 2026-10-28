@@ -1,5 +1,7 @@
 let resolveProject, waitProject
 if (!waitProject) waitProject = new Promise(resolve => resolveProject = resolve)
+// run() can reach a vote script and these helpers while this file is still loading, so their state comes first
+let turnstileWait
 
 //Фикс-костыль двойной загрузки (для Rocket Loader)
 if (!window.loaded) {
@@ -26,12 +28,9 @@ async function run() {
         })
     }
 
-    try {
-        await checkAll(true)
-    } catch (error) {
-        throwError(error)
-        return
-    }
+    // vote(true) can wait for a Turnstile token as long as the tab stays open,
+    // so what helps solving the captcha starts without waiting for it
+    const firstVote = checkAll(true)
 
     // Интеграция с расширениями на автоматические решение капч
     const timer1 = setInterval(()=> {
@@ -60,6 +59,14 @@ async function run() {
             clearInterval(timer2)
         }
     }, 1000)
+
+    try {
+        await firstVote
+    } catch (error) {
+        clearInterval(timer1)
+        clearInterval(timer2)
+        throwError(error)
+    }
 }
 
 async function checkAll(first) {
@@ -355,6 +362,27 @@ function throwError(error) {
     if (ignoreReport) request.ignoreReport = true
 
     chrome.runtime.sendMessage(request)
+}
+
+// Cloudflare Turnstile often solves itself without showing a success state, so vote scripts wait for the token
+// it writes into the form. Its hidden field only appears once the widget has rendered, so we poll for the field too.
+// The user is asked once to solve it by hand after timeout seconds, and we keep waiting so the vote still goes through.
+// Every call on the page shares the first wait, so a second vote() call does not ask the user again
+function waitTurnstileToken(scope = '', timeout = 60) {
+    if (turnstileWait) return turnstileWait
+    turnstileWait = new Promise(resolve => {
+        let ticks = 0
+        const timer = setInterval(() => {
+            const field = document.querySelector((scope ? scope + ' ' : '') + 'input[name="cf-turnstile-response"]')
+            if (field != null && field.value.length > 0) {
+                clearInterval(timer)
+                resolve(field.value)
+            } else if (++ticks === timeout) {
+                chrome.runtime.sendMessage({captcha: true})
+            }
+        }, 1000)
+    })
+    return turnstileWait
 }
 
 function wait(ms) {

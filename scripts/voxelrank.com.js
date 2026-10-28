@@ -1,5 +1,3 @@
-const TURNSTILE_TIMEOUT = 60
-
 let submitted = false
 
 async function vote(first) {
@@ -50,25 +48,9 @@ async function vote(first) {
         return
     }
 
-    // The Turnstile is invisible and solves itself, it only asks for a click when Cloudflare doubts,
-    // so we wait for the token it writes into the form. Its hidden field only appears once the widget has rendered
-    let ticks = 0
-    const timer = setInterval(() => {
-        try {
-            const field = form.querySelector('input[name="cf-turnstile-response"]')
-            if (field != null && field.value.length > 0) {
-                clearInterval(timer)
-                form.requestSubmit()
-            } else if (++ticks === TURNSTILE_TIMEOUT) {
-                // The widget turned interactive, we keep waiting so the vote goes through once the user solves it,
-                // the background closes the tab when its vote timeout runs out
-                chrome.runtime.sendMessage({captcha: true})
-            }
-        } catch (e) {
-            clearInterval(timer)
-            throwError(e)
-        }
-    }, 1000)
+    // The Turnstile is invisible and solves itself, it only asks for a click when Cloudflare doubts
+    await waitTurnstileToken('form.vote-form')
+    form.requestSubmit()
 }
 
 // The vote window opens at a fixed time of day, the countdown gives either the seconds left or the next window

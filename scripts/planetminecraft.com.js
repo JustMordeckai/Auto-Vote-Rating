@@ -1,5 +1,4 @@
 const TOS_DIALOG_SELECTOR = 'div[role="dialog"]:not([class*="fc-"])'
-const TURNSTILE_TIMEOUT = 60
 
 let submitted = false
 
@@ -59,25 +58,8 @@ async function vote(first) {
         console.warn('Не удалось найти поле для никнейма, возможно это голосование без награды')
     }
 
-    // The hidden token field only appears once the widget has rendered, so we poll for both
     if ((turnstileField != null || turnstileWidget != null) && !(turnstileField?.value.length > 0)) {
-        const solved = await new Promise(resolve => {
-            let ticks = 0
-            const timer3 = setInterval(() => {
-                const field = document.querySelector('#submit_vote_form input[name="cf-turnstile-response"]')
-                if (field != null && field.value.length > 0) {
-                    clearInterval(timer3)
-                    resolve(true)
-                } else if (++ticks >= TURNSTILE_TIMEOUT) {
-                    clearInterval(timer3)
-                    resolve(false)
-                }
-            }, 1000)
-        })
-        if (!solved) {
-            chrome.runtime.sendMessage({captcha: true})
-            return
-        }
+        await waitTurnstileToken('#submit_vote_form')
     }
 
     // vote() can be called a second time when the captcha reports itself as solved

@@ -1,7 +1,4 @@
-const TURNSTILE_TIMEOUT = 60
-
 let submitted = false
-let captchaReported = false
 
 async function vote(first) {
     //Пилюля от жадности
@@ -88,27 +85,7 @@ async function vote(first) {
 
     // Cloudflare Turnstile is invisible and solves itself, we only wait for the token it writes into the form
     if (document.querySelector('.cf-turnstile')) {
-        const solved = await new Promise(resolve => {
-            let ticks = 0
-            const timer4 = setInterval(() => {
-                const field = document.querySelector('input[name="cf-turnstile-response"]')
-                if (field != null && field.value.length > 0) {
-                    clearInterval(timer4)
-                    resolve(true)
-                } else if (++ticks >= TURNSTILE_TIMEOUT) {
-                    clearInterval(timer4)
-                    resolve(false)
-                }
-            }, 1000)
-        })
-        if (!solved) {
-            // Whichever call times out, the user has to know the captcha never solved itself
-            if (!captchaReported) {
-                captchaReported = true
-                chrome.runtime.sendMessage({captcha: true})
-            }
-            return
-        }
+        await waitTurnstileToken()
     //Если на странице есть hCaptcha то мы ждём её решения
     } else if ((document.querySelector('div.h-captcha') || document.querySelector('#captcha-block')) && first) {
         return
