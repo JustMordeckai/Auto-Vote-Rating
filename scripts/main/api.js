@@ -1,7 +1,7 @@
 let resolveProject, waitProject
 if (!waitProject) waitProject = new Promise(resolve => resolveProject = resolve)
 // run() can reach a vote script and these helpers while this file is still loading, so their state comes first
-let turnstileWait
+let turnstileWait, turnstilePassed = false
 
 //Фикс-костыль двойной загрузки (для Rocket Loader)
 if (!window.loaded) {
@@ -17,6 +17,11 @@ async function run() {
             if (request.vkontakte) window.vkontakte = request.vkontakte
             resolveProject()
         } else if (request.captchaPassed) {
+            // The token watcher may already have taken this Turnstile into account
+            if (request.turnstile) {
+                if (turnstilePassed) return
+                turnstilePassed = true
+            }
             // noinspection JSIgnoredPromiseFromCall
             checkAll(false)
         }
@@ -31,6 +36,7 @@ async function run() {
     // vote(true) can wait for a Turnstile token as long as the tab stays open,
     // so what helps solving the captcha starts without waiting for it
     const firstVote = checkAll(true)
+    const turnstileTimer = watchTurnstileToken()
 
     // Интеграция с расширениями на автоматические решение капч
     const timer1 = setInterval(()=> {
@@ -63,6 +69,7 @@ async function run() {
     try {
         await firstVote
     } catch (error) {
+        clearInterval(turnstileTimer)
         clearInterval(timer1)
         clearInterval(timer2)
         throwError(error)
@@ -362,6 +369,27 @@ function throwError(error) {
     if (ignoreReport) request.ignoreReport = true
 
     chrome.runtime.sendMessage(request)
+}
+
+// captchaclicker.js only reports a Turnstile once it shows a success state, which an invisible one never does,
+// so the token written into the page counts as the captcha being passed, for scripts waiting on vote(false).
+// Only once per page, the widget refreshes its token later on. A page that also has another captcha keeps
+// waiting for that one through captchaPassed, the Turnstile there is often just a bot check
+function watchTurnstileToken() {
+    const timer = setInterval(() => {
+        if (turnstilePassed || document.querySelector('.h-captcha, .g-recaptcha, [name="h-captcha-response"], [name="g-recaptcha-response"], iframe[src*="hcaptcha.com"], iframe[src*="/recaptcha/"], #captcha-block')) {
+            clearInterval(timer)
+            return
+        }
+        const field = document.querySelector('input[name="cf-turnstile-response"]')
+        if (field != null && field.value.length > 0) {
+            clearInterval(timer)
+            turnstilePassed = true
+            // noinspection JSIgnoredPromiseFromCall
+            checkAll(false)
+        }
+    }, 1000)
+    return timer
 }
 
 // Cloudflare Turnstile often solves itself without showing a success state, so vote scripts wait for the token

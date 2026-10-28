@@ -10,7 +10,7 @@ chrome.runtime.onMessage.addListener(function(request/*, sender, sendResponse*/)
             run()
         // на случай если капча была решена раньше чем страница загрузилась
         } else if (window.solvedCaptcha) {
-            chrome.runtime.sendMessage({captchaPassed: 'double'})
+            chrome.runtime.sendMessage({captchaPassed: 'double', turnstile: window.solvedTurnstile})
         }
     }
 })
@@ -167,7 +167,9 @@ function run() {
             if (body.querySelector('#success') && body.querySelector('#success').style.display !== 'none') {
                 clearInterval(timer8)
                 window.solvedCaptcha = true
-                chrome.runtime.sendMessage({captchaPassed: true})
+                window.solvedTurnstile = true
+                // api.js may already have seen the token of this Turnstile, the flag lets it skip a second vote
+                chrome.runtime.sendMessage({captchaPassed: true, turnstile: true})
             }
         }, 1000)
     }

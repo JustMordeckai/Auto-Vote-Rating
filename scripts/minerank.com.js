@@ -5,6 +5,8 @@ const VOTE_RESULT_TIMEOUT = 15
 const MAX_CAPTCHA_WAIT = 30
 const MAX_VOTE_CLICKS = 3
 
+let voteStarted = false
+
 // Polls once a second until the condition returns something truthy, null once the timeout is over.
 // setInterval is used on purpose: hacktimer.js reroutes the timers and an awaited setTimeout can hang
 function poll(condition, timeout) {
@@ -83,6 +85,10 @@ async function clickVoteButton() {
 
 
 async function vote(first) {
+    // vote() runs again once the Turnstile token shows up, the first call already waits for it
+    if (voteStarted) return
+    voteStarted = true
+
     // The rating renders its page on the client side, wait until there is something to work with
     await poll(() => document.querySelector(USERNAME_FIELD_SELECTOR)
         || document.querySelector(ALERT_DIALOG_SELECTOR)
