@@ -607,7 +607,7 @@ var allProjects = {
         pageURL: (project) => 'https://minecraft.buzz/server/' + project.id,
         voteURL: (project) => 'https://minecraft.buzz/vote/' + project.id,
         projectName: (doc) => doc.querySelector('#vote-line').previousElementSibling.textContent.trim(),
-        exampleURL: () => ['https://minecraft.buzz/vote/', '306', ''],
+        exampleURL: () => ['https://minecraft.buzz/vote/', 'complex-gaming', ''],
         parseURL: (url) => ({id: url.pathname.split('/')[2]}),
         timeout: () => ({hour: 0})
     },
