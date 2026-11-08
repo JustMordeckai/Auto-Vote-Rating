@@ -1,3 +1,5 @@
 .playwright-mcp/
 .remember/
 build/
+# Chrome Web Store service account key, it only belongs in the CWS_SERVICE_ACCOUNT secret
+/auto-vote-rating-*.json
