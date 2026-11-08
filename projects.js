@@ -1646,6 +1646,18 @@ var allProjects = {
         // Only used when the page gives no countdown, the window opened at 23:00 UTC in October
         timeout: () => ({hour: 23})
     },
+    '16bitmc.net': {
+        pageURL: (project) => 'https://16bitmc.net/server/' + project.id,
+        voteURL: (project) => 'https://16bitmc.net/vote/' + project.id,
+        // The h1 adds "Minecraft Server IP and Details" after the name, the icon alt only adds "icon"
+        projectName: (doc) => doc.querySelector('img.server-icon')?.alt.replace(/\s*icon$/i, '') || doc.querySelector('h1').textContent.replace(/\s*Minecraft Server IP and Details\s*$/i, ''),
+        // Unknown ids still answer 200, with an error box instead of the server
+        notFound: (doc) => doc.querySelector('.container > .error-box')?.textContent.trim() || false,
+        exampleURL: () => ['https://16bitmc.net/vote/', '226', ''],
+        parseURL: (url) => ({id: url.pathname.split('/')[2]}),
+        // Only used when the page gives no cooldown
+        timeout: () => ({hours: 24})
+    },
     Custom: {
         pageURL: (project) => project.responseURL,
         voteURL: (project) => project.responseURL,

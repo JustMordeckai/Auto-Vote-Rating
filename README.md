@@ -61,6 +61,7 @@ Auto-Vote-Rating is a browser extension that automates voting for your favorite 
 <summary>📋 Click to view all supported sites</summary>
 
 ### Minecraft Servers (80+)
+<a href="https://16bitmc.net/">16bitmc.net</a>  
 <a href="https://40servidoresmc.es/">40servidoresmc.es</a>  
 <a href="https://atlauncher.com/">atlauncher.com</a>  
 <a href="https://best-minecraft-servers.co/">best-minecraft-servers.co</a>  
