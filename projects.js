@@ -129,10 +129,16 @@ var allProjects = {
     'topg.org': {
         pageURL: (project) => 'https://topg.org/' + project.game + '/' + project.id,
         voteURL: (project) => 'https://topg.org/' + project.game + '/' + project.id,
-        projectName: (doc) => doc.querySelector('div.sheader').textContent,
+        projectName: (doc) => doc.querySelector('#main-heading').textContent,
         exampleURL: () => ['https://topg.org/minecraft-servers/', 'server-405637', ''],
-        parseURL: (url) => ({ game: url.pathname.split('/')[1], id: url.pathname.split('/')[2]}),
-        timeout: () => ({hours: 12}),
+        parseURL: (url) => {
+            // Translated pages add a language segment (/fr/serveurs-minecraft/server-405637) and the id can carry a name slug
+            const parts = url.pathname.split('/').filter(Boolean)
+            const index = parts.findIndex(part => /^server-\d+/.test(part))
+            if (index === -1) return {game: parts[0], id: parts[1]}
+            return {game: parts.slice(0, index).join('/'), id: parts[index].match(/^server-\d+/)[0]}
+        },
+        timeout: () => ({hours: 6}),
         exampleURLGame: () => ['https://topg.org/', 'minecraft-servers', '/server-405637'],
         gameList: () => new Map([
             ['minecraft-servers', 'Minecraft'],
